@@ -9,7 +9,7 @@ import argparse
 from pause import pause
 import bitmath
 import clipboard
-if sys.version_info == 3:
+if sys.version_info.major == 3:
 	raw_input = input
 	from urllib.parse import unquote
 else:
