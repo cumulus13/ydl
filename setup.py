@@ -24,7 +24,8 @@ setup(
         'click',
         'clipboard',
         'bitmath',
-        'pushbullet.py'
+        'pushbullet.py',
+        'playsound'
     ],
     # TODO
     #entry_points={
