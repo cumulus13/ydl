@@ -287,13 +287,8 @@ class ydl(object):
                 self.downloader(link, path, download_name, confirm)        
         return True
 
+def usage():
+    ydl.nav()
+
 if __name__ == '__main__':
-    c = ydl()
-    if not len(sys.argv) > 1:
-        print(make_colors("Usage:", 'lw', 'lr') + " " + make_colors("ydl.py [URL]", 'lw', 'lb'))
-    else:
-        # url = sys.argv[1]
-        # if url == 'c':
-        #     url = clipboard.paste()
-        c.nav()
-        # ydl.nav()
+    usage()

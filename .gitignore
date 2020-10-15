@@ -11,4 +11,5 @@
 *dist/
 *.egg-info/
 traceback.log
+*build/
 __pycache__/

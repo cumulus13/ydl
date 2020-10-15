@@ -32,7 +32,7 @@ setup(
     #    "console_scripts": ["drawille=drawille:__main__"]
     #},
     entry_points = {
-         "console_scripts": ["ydl = ydl:nav",]
+         "console_scripts": ["ydl = ydl:usage",]
     },
     classifiers = [
         "Development Status :: 4 - Beta",
