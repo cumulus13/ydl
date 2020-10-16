@@ -18,6 +18,7 @@ import getpass
 from xnotify import notify as notif
 from configset import configset
 import click
+import string
 
 class ydl(object):
 
@@ -30,6 +31,14 @@ class ydl(object):
     def __init__(self):
         super(ydl, self)
         self.youtube = YoutubeDL()
+
+    @classmethod
+    def normalitation_string(cls, data):
+        for i in string.punctuation:
+            print("i =", i)
+            data = data.replace(i, "")
+            debug(data = data, debug = True)
+        return data
 
     @classmethod
     def downloader(cls, url, download_path = None, saveas = None, confirm = False):
@@ -141,7 +150,7 @@ class ydl(object):
         if not ext:
             ext = "mp4"
         if download_all and not quality:
-            qp = raw_input("QUALITY: ", 'lw', 'lr')
+            qp = raw_input(make_colors("QUALITY: ", 'lw', 'lr'))
         if qp:
             quality = qp
         all_formats = entry.get('formats')
@@ -209,13 +218,21 @@ class ydl(object):
     @click.option('-p', '--path', help = 'Download Path', default = os.getcwd(), metavar='DOWNLOAD_PATH')
     @click.option('-o', '--output', help = 'Save as download file', metavar="NAME")
     @click.option('-q', '--quality', help = 'Quality: 240p|360p|480p|720p|1080p', metavar='QUALITY')
+    @click.option('-s', '--start', help = 'Start download from number to (Only for download playlist)', metavar='START_NUMBER', default = 0)
     @click.option('-s', '--show', help = 'Show Description for one download and false for download all', is_flag = True)
     @click.option('-c', '--confirm', help = 'Confirmation before download', is_flag = True)
-    def nav(url, path, output, quality, confirm, show):
+    def nav(url, path, output, quality, confirm, show, start):
         # debug(url = url, debug = True)
         # debug(path = path, debug = True)
         # debug(output = output, debug = True)
         # debug(quality = quality, debug = True)
+
+        if path:
+            if not os.path.isdir(path):
+                try:
+                    os.makedirs(path)
+                except OSError:
+                    pass
         ext = None
         quality_str = None
         self = ydl()
@@ -257,11 +274,26 @@ class ydl(object):
                     link, quality_str, ext = self.get_download(entry, quality, confirm)
             elif str(q).strip() == 'a' or str(q).strip() == 'all':
                 download_all = True
+            elif str(q).strip()[-1] == 'a' or str(q).strip()[-3:] == 'all':
+                download_all = True
+                q = str(q).strip()
+                qn = 0
+                if q[-1] == 'a':
+                    qn = q[:-1]
+                elif q[-3:] == 'all':
+                    try:
+                        qn = q[-3:]
+                    except:
+                        pass
+                if qn:
+                    if str(qn).isdigit():
+                        start = int(qn)
+
         else:
             link, quality_str, ext = self.get_download(result, quality, confirm)
         
         if download_all:
-            for i in result.get('entries'):
+            for i in result.get('entries')[int(start - 1):]:
                 link, quality_str, ext = self.get_download(i, quality, confirm = confirm, download_all = True, show_description = show)
                 if not link:
                     print(make_colors("Ivalid Link !", 'lw', 'lr', ['blink']))
@@ -270,6 +302,10 @@ class ydl(object):
                         print(make_colors("Downloading {}.{} [{}]  ...".format(i.get('title'), ext, quality_str)))
                     else:
                         print(make_colors("Downloading {}.{} [{}]  ...".format(i.get('title'), ext, quality_str)))
+                        download_name = i.get('title') + "." + ext
+                        debug(download_name = download_name, debug = True)
+                        download_name = self.normalitation_string(download_name)
+                        debug(download_name = download_name, debug = True)
                         self.downloader(link, path, download_name, confirm)        
         else:
             if not link:
@@ -278,6 +314,7 @@ class ydl(object):
 
             debug(link = link, debug = True)
             download_name = result.get('title') + "." + ext
+            download_name = self.normalitation_string(download_name)
             if output:
                 download_name = output
             if os.getenv('TEST'):
