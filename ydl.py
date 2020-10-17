@@ -202,6 +202,8 @@ class ydl(object):
                         if not qd == 'y':
                             sys.exit(make_colors("Exit ...", 'lr'))                    
                     return link, quality_str, ext
+            else:
+                return False
             
         else:            
             for i in all_formats:
@@ -287,6 +289,8 @@ class ydl(object):
                 if not int(str(q).strip()) > len(result.get('entries')):
                     entry = result.get('entries')[int(q) - 1]
                     link, quality_str, ext = self.get_download(entry, quality, confirm)
+                    if not link:
+                        return False
             elif str(q).strip() == 'a' or str(q).strip() == 'all':
                 download_all = True
             elif str(q).strip()[-1] == 'a' or str(q).strip()[-3:] == 'all':
@@ -305,11 +309,18 @@ class ydl(object):
                         start = int(qn)
 
         else:
-            link, quality_str, ext = self.get_download(result, quality, confirm)
+            try:
+                link, quality_str, ext = self.get_download(result, quality, confirm)
+                if not link:
+                    return False
+            except:
+                return False
         
         if download_all:
             for i in result.get('entries')[int(start - 1):]:
                 link, quality_str, ext = self.get_download(i, quality, confirm = confirm, download_all = True, show_description = show)
+                if not link:
+                    return False
                 if not link:
                     print(make_colors("Ivalid Link !", 'lw', 'lr', ['blink']))
                 else:
