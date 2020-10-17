@@ -19,6 +19,7 @@ from xnotify import notify as notif
 from configset import configset
 import click
 import string
+import subprocess
 
 class ydl(object):
 
@@ -35,9 +36,9 @@ class ydl(object):
     @classmethod
     def normalitation_string(cls, data):
         for i in string.punctuation:
-            print("i =", i)
+            # print("i =", i)
             data = data.replace(i, "")
-            debug(data = data, debug = True)
+            debug(data = data)
         return data
 
     @classmethod
@@ -91,21 +92,31 @@ class ydl(object):
         '''
             downloader: aria2c, wget, uget, persepolis
         '''
-        aria2c = os.popen3("aria2c")
-        wget = os.popen3("wget")
-        persepolis = os.popen3("persepolis --help")
 
-        if downloader == 'aria2c' and not re.findall("not found\n", aria2c[2].readlines()[0]):
+        if sys.version_info.major == 3:
+            aria2c = subprocess.getoutput("aria2c")
+        else:
+            aria2c = os.popen3("aria2c")[2].readlines()[0]
+        if sys.version_info.major == 3:
+            wget = subprocess.getoutput("wget")
+        else:
+            wget = os.popen3("wget")[2].readlines()[0]
+        if sys.version_info.major == 3:
+            persepolis = subprocess.getoutput("persepolis --help")
+        else:
+            persepolis = os.popen3("persepolis --help")[2].readlines()[0]
+
+        if downloader == 'aria2c' and not re.findall("not found\n", aria2c):
             if saveas:
                 saveas = '-o "{0}"'.format(saveas)
             os.system('aria2c -c -d "{0}" "{1}" {2} --file-allocation=none'.format(os.path.abspath(download_path), url, saveas))
-        elif downloader == 'wget' and not re.findall("not found\n", wget[2].readlines()[0]):
+        elif downloader == 'wget' and not re.findall("not found\n", wget):
             if saveas:
                 saveas = '-P {0} -o "{1}"'.format(os.download_path.abspath(download_path), saveas)
             else:
                 saveas = '-P {0}'.format(os.download_path.abspath(download_path))
             os.system('wget -c "{2}" {1}'.format(url, saveas))
-        elif downloader == 'persepolis'  and not re.findall("not found\n", persepolis[2].readlines()[0]):
+        elif downloader == 'persepolis'  and not re.findall("not found\n", persepolis):
             os.system('persepolis --link "{0}"'.format(url))
         else:
             try:
@@ -171,7 +182,7 @@ class ydl(object):
                 else:
                     number = str(n)
                 if f.get('filesize'):
-                    print(make_colors(number, 'lc') + ". " + make_colors(f.get('format'), 'lw', 'bl') + " [" + make_colors(str("%0.2f"%bitmath.Bit(f.get('filesize')).Mb) + " Mb", 'b','ly') + "] [" + make_colors(f.get('ext'), 'lr', 'lw') + "]")
+                    print(make_colors(number, 'lc') + ". " + make_colors(f.get('format'), 'lw', 'lr') + " [" + make_colors(str("%0.2f"%bitmath.Bit(f.get('filesize')).Mb) + " Mb", 'b','ly') + "] [" + make_colors(f.get('ext'), 'lr', 'lw') + "]")
                 else:
                     print(make_colors(number, 'lc') + ". " + make_colors(f.get('format'), 'lw', 'bl') + " [ ] [" + make_colors(f.get('ext'), 'lr', 'lw') + "]")
                 n +=1
@@ -212,7 +223,7 @@ class ydl(object):
             return link, quality_str, ext
         return False
 
-    # @classmethod
+    
     @click.command()
     @click.argument('url')
     @click.option('-p', '--path', help = 'Download Path', default = os.getcwd(), metavar='DOWNLOAD_PATH')
@@ -221,12 +232,16 @@ class ydl(object):
     @click.option('-s', '--start', help = 'Start download from number to (Only for download playlist)', metavar='START_NUMBER', default = 0)
     @click.option('-s', '--show', help = 'Show Description for one download and false for download all', is_flag = True)
     @click.option('-c', '--confirm', help = 'Confirmation before download', is_flag = True)
-    def nav(url, path, output, quality, confirm, show, start):
+    def navigate(url, path, output = None, quality = None, confirm = None, show = None, start= None):
+        return ydl.nav(url, path, output, quality, confirm, show, start)
+    
+    @classmethod
+    def nav(cls, url, path, output = None, quality = None, confirm = None, show = None, start = None):
         # debug(url = url, debug = True)
         # debug(path = path, debug = True)
         # debug(output = output, debug = True)
         # debug(quality = quality, debug = True)
-
+        # sys.exit()
         if path:
             if not os.path.isdir(path):
                 try:
@@ -302,7 +317,8 @@ class ydl(object):
                         print(make_colors("Downloading {}.{} [{}]  ...".format(i.get('title'), ext, quality_str)))
                     else:
                         print(make_colors("Downloading {}.{} [{}]  ...".format(i.get('title'), ext, quality_str)))
-                        download_name = i.get('title') + "." + ext
+                        download_name = i.get('title')
+                        download_name = self.normalitation_string(download_name) + "." + ext
                         debug(download_name = download_name, debug = True)
                         download_name = self.normalitation_string(download_name)
                         debug(download_name = download_name, debug = True)
@@ -313,8 +329,8 @@ class ydl(object):
                 return False
 
             debug(link = link, debug = True)
-            download_name = result.get('title') + "." + ext
-            download_name = self.normalitation_string(download_name)
+            download_name = result.get('title')
+            download_name = self.normalitation_string(download_name) + "." + ext
             if output:
                 download_name = output
             if os.getenv('TEST'):
@@ -325,7 +341,7 @@ class ydl(object):
         return True
 
 def usage():
-    ydl.nav()
+    ydl.navigate()
 
 if __name__ == '__main__':
     usage()
