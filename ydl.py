@@ -28,6 +28,7 @@ class ydl(object):
     configfile = os.path.join(os.path.dirname(__file__), 'ydl.ini')
     config = configset(configfile)
     is_playlist = False
+    quality = None
 
     def __init__(self):
         super(ydl, self)
@@ -163,7 +164,9 @@ class ydl(object):
         if download_all and not quality:
             qp = raw_input(make_colors("QUALITY: ", 'lw', 'lr'))
         if qp:
-            quality = qp
+            cls.quality = qp
+            quality = cls.quality
+
         all_formats = entry.get('formats')
         link = None
         n = 1
@@ -239,10 +242,10 @@ class ydl(object):
     
     @classmethod
     def nav(cls, url, path, output = None, quality = None, confirm = None, show = None, start = None):
-        # debug(url = url, debug = True)
-        # debug(path = path, debug = True)
-        # debug(output = output, debug = True)
-        # debug(quality = quality, debug = True)
+        # debug(url = url)
+        # debug(path = path)
+        # debug(output = output)
+        # debug(quality = quality)
         # sys.exit()
         if path:
             if not os.path.isdir(path):
@@ -328,20 +331,18 @@ class ydl(object):
                         print(make_colors("Downloading {}.{} [{}]  ...".format(i.get('title'), ext, quality_str)))
                     else:
                         print(make_colors("Downloading {}.{} [{}]  ...".format(i.get('title'), ext, quality_str)))
-                        download_name = i.get('title')
-                        download_name = self.normalitation_string(download_name) + "." + ext
-                        debug(download_name = download_name, debug = True)
-                        download_name = self.normalitation_string(download_name)
-                        debug(download_name = download_name, debug = True)
+                        download_name = self.normalitation_string(i.get('title'))
+                        download_name =  download_name + "." + ext
+                        debug(download_name = download_name)
                         self.downloader(link, path, download_name, confirm)        
         else:
             if not link:
                 print(make_colors("Ivalid Link !", 'lw', 'lr', ['blink']))
                 return False
 
-            debug(link = link, debug = True)
-            download_name = result.get('title')
-            download_name = self.normalitation_string(download_name) + "." + ext
+            debug(link = link)
+            download_name = self.normalitation_string(result.get('title'))
+            download_name =  download_name + "." + ext
             if output:
                 download_name = output
             if os.getenv('TEST'):
