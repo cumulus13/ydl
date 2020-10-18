@@ -327,6 +327,11 @@ class ydl(object):
         
         if download_all:
             for i in result.get('entries')[int(start - 1):]:
+                if len(str(start)) == 1:
+                    ns = "0" + str(start)
+                else:
+
+                    ns = str(start)
                 link, quality_str, ext = self.get_download(i, quality, confirm = confirm, download_all = True, show_description = show)
                 if not link:
                     return False
@@ -338,9 +343,10 @@ class ydl(object):
                     else:
                         print(make_colors("Downloading {}.{} [{}]  ...".format(i.get('title'), ext, quality_str)))
                         download_name = self.normalitation_string(i.get('title'))
-                        download_name =  download_name + "." + ext
+                        download_name =  ns + "." + download_name + "." + ext
                         debug(download_name = download_name)
                         self.downloader(link, path, download_name, confirm)        
+                    ns = int(ns) + 1
         else:
             if not link:
                 print(make_colors("Ivalid Link !", 'lw', 'lr', ['blink']))
