@@ -161,9 +161,11 @@ class ydl(object):
         quality_str = None
         if not ext:
             ext = "mp4"
-        if download_all and not quality:
+        if download_all and not quality and not cls.quality:
             qp = raw_input(make_colors("QUALITY: ", 'lw', 'lr'))
-        if qp:
+        if cls.quality:
+            quality = cls.quality
+        elif qp:
             cls.quality = qp
             quality = cls.quality
 
@@ -291,6 +293,8 @@ class ydl(object):
                 q = str(q).strip()
                 if not int(str(q).strip()) > len(result.get('entries')):
                     entry = result.get('entries')[int(q) - 1]
+                    if not entry:
+                        return False
                     link, quality_str, ext = self.get_download(entry, quality, confirm)
                     if not link:
                         return False
@@ -313,6 +317,8 @@ class ydl(object):
 
         else:
             try:
+                if not result:
+                    return False
                 link, quality_str, ext = self.get_download(result, quality, confirm)
                 if not link:
                     return False
