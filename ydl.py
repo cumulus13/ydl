@@ -11,15 +11,17 @@ import bitmath
 import clipboard
 if sys.version_info.major == 3:
     raw_input = input
-    from urllib.parse import unquote
+    from urllib.parse import unquote, urlparse
 else:
     from  urllib import unquote
+    from urlparse import urlparse
 import getpass
 from xnotify import notify as notif
 from configset import configset
 import click
 import string
 import subprocess
+from proxy_tester import auto
 
 class ydl(object):
 
@@ -29,6 +31,7 @@ class ydl(object):
     config = configset(configfile)
     is_playlist = False
     quality = None
+    is_vimeo = False
 
     def __init__(self):
         super(ydl, self)
@@ -93,7 +96,8 @@ class ydl(object):
         '''
             downloader: aria2c, wget, uget, persepolis
         '''
-
+        if cls.is_vimeo:
+            downloader = 'wget'
         if sys.version_info.major == 3:
             aria2c = subprocess.getoutput("aria2c")
         else:
@@ -105,20 +109,26 @@ class ydl(object):
         if sys.version_info.major == 3:
             persepolis = subprocess.getoutput("persepolis --help")
         else:
-            persepolis = os.popen3("persepolis --help")[2].readlines()[0]
+            persepolis = os.popen3("persepolis --help")[1].readlines()[0]
 
         if downloader == 'aria2c' and not re.findall("not found\n", aria2c):
             if saveas:
                 saveas = '-o "{0}"'.format(saveas)
-            os.system('aria2c -c -d "{0}" "{1}" {2} --file-allocation=none'.format(os.path.abspath(download_path), url, saveas))
+            cmd = 'aria2c -c -d "{0}" "{1}" {2} --file-allocation=none'.format(os.path.abspath(download_path), url, saveas)
+            debug(cmd = cmd)
+            os.system(cmd)
         elif downloader == 'wget' and not re.findall("not found\n", wget):
             if saveas:
-                saveas = '-P {0} -o "{1}"'.format(os.download_path.abspath(download_path), saveas)
+                saveas = '-P "{0}" -O "{1}"'.format(os.path.abspath(download_path), saveas)
             else:
-                saveas = '-P {0}'.format(os.download_path.abspath(download_path))
-            os.system('wget -c "{2}" {1}'.format(url, saveas))
+                saveas = '-P "{0}"'.format(os.path.abspath(download_path))
+            cmd = 'wget -c "{0}" {1}'.format(url, saveas)
+            debug(cmd = cmd, debug = True)
+            os.system(cmd)
         elif downloader == 'persepolis'  and not re.findall("not found\n", persepolis):
-            os.system('persepolis --link "{0}"'.format(url))
+            cmd = 'persepolis --link "{0}"'.format(url)
+            debug(cmd = cmd)
+            os.system(cmd)
         else:
             try:
                 from pywget import wget as d
@@ -147,6 +157,8 @@ class ydl(object):
 
     @classmethod
     def get_info(cls, url):
+        if urlparse(url).netloc == 'vimeo.com':
+            cls.is_vimeo = True
         if 'list=PL' in url:
             cls.is_playlist = True
         try:
@@ -170,6 +182,12 @@ class ydl(object):
             quality = cls.quality
 
         all_formats = entry.get('formats')
+        if cls.is_vimeo:
+            all_formats_temp = []
+            for f in all_formats:
+                if 'http-' in f.get('format'):
+                    all_formats_temp.append(f)
+            all_formats = all_formats_temp
         link = None
         n = 1
         if not all_formats:
@@ -239,11 +257,12 @@ class ydl(object):
     @click.option('-s', '--start', help = 'Start download from number to (Only for download playlist)', metavar='START_NUMBER', default = 0)
     @click.option('-s', '--show', help = 'Show Description for one download and false for download all', is_flag = True)
     @click.option('-c', '--confirm', help = 'Confirmation before download', is_flag = True)
-    def navigate(url, path, output = None, quality = None, confirm = None, show = None, start= None):
-        return ydl.nav(url, path, output, quality, confirm, show, start)
+    @click.option('-x', '--proxies', help = "IP_ADDRESS:PORT or use can use 'auto'", nargs = 1, metavar="PROXIES")
+    def navigate(url, path, output = None, quality = None, confirm = None, show = None, start= None, proxies=None):
+        return ydl.nav(url, path, output, quality, confirm, show, start, proxies)
     
     @classmethod
-    def nav(cls, url, path, output = None, quality = None, confirm = None, show = None, start = None):
+    def nav(cls, url, path, output = None, quality = None, confirm = None, show = None, start = None, proxies = None):
         # debug(url = url)
         # debug(path = path)
         # debug(output = output)
