@@ -175,10 +175,10 @@ class ydl(object):
             cls.is_playlist = True
         result = cls.get_info(url)
         while 1:
-            if result:
-                break
-            else:
+            if not result:
                 result = cls.get_info(url)
+            else:
+                break
             
         videos = []
         
@@ -186,8 +186,8 @@ class ydl(object):
             for i in result.get('entries'):
                 all_formatting = ['144', '240', '360', '480', '720', '1080', 'size']
                 downloads = {}
-                for i in all_formatting:
-                    downloads.update({i:{'mp4':[], 'webm':[]}})
+                for j in all_formatting:
+                    downloads.update({j:{'mp4':[], 'webm':[]}})
                 all_videos = i.get('formats')
                 for t in all_formatting:
                     for v in all_videos:
