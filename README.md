@@ -4,8 +4,8 @@
 
 ## requirements
 
-Python > 3.0
-Internet Connection
+* Python > 2.7
+* Internet Connection
 
 
 ## install
@@ -38,7 +38,20 @@ all command help can access by:
     yld --help
 ```
 
-## How To Use? :
+## as module
+
+```python:
+
+>> from ydl import ydl
+>> url = "https://www.youtube.com/watch?v=c__fxPkCSns"
+>> videos = ydl.get_videos(url)
+>> #get all mp4 formats 720
+>> videos[0].get('downloads').get('720').get('mp4')
+>> #get all webm formats 480
+>> videos[0].get('downloads').get('480').get('webm')
+>> #support webm and mp4 
+```
+## How To Use as command line
 Watch This Tutorial : [Click Here](https://www.youtube.com/watch?v=c__fxPkCSns)
 
 ## authors

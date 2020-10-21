@@ -166,6 +166,75 @@ class ydl(object):
             return result
         except:
             return False
+
+    @classmethod
+    def get_videos(cls, url):
+        if urlparse(url).netloc == 'vimeo.com':
+            cls.is_vimeo = True
+        if 'list=PL' in url:
+            cls.is_playlist = True
+        result = cls.get_info(url)
+        while 1:
+            if result:
+                break
+            else:
+                result = cls.get_info(url)
+            
+        videos = []
+        
+        if cls.is_playlist:
+            for i in result.get('entries'):
+                all_formatting = ['144', '240', '360', '480', '720', '1080', 'size']
+                downloads = {}
+                for i in all_formatting:
+                    downloads.update({i:{'mp4':[], 'webm':[]}})
+                all_videos = i.get('formats')
+                for t in all_formatting:
+                    for v in all_videos:
+                        if t in v.get('format'):
+                            if v.get('ext').lower() == 'mp4':
+                                downloads.get(t).get('mp4').append(v.get('url'))    
+                            elif v.get('ext').lower() == 'webm':
+                                downloads.get(t).get('webm').append(v.get('url'))
+                        downloads.update(
+                            {'title': v.get('title'),
+                            'description': v.get('description')}
+                        )
+                videos.append(
+                    {
+                        'title':i.get('title'), 
+                        'description': i.get('description'),
+                        'downloads': downloads
+                    }
+                )
+        else:
+            all_formatting = ['144', '240', '360', '480', '720', '1080']
+            downloads = {}
+            for i in all_formatting:
+                downloads.update({i:{'mp4':[], 'webm':[]}})
+            all_videos = result.get('formats')
+            
+            for t in all_formatting:
+                for v in all_videos:
+                    if t in v.get('format'):
+                        if v.get('ext').lower() == 'mp4':
+                            downloads.get(t).get('mp4').append(v.get('url'))    
+                        elif v.get('ext').lower() == 'webm':
+                            downloads.get(t).get('webm').append(v.get('url'))
+                    downloads.update(
+                        {'title': v.get('title'),
+                        'description': v.get('description')}
+                    )
+            videos.append(
+                {
+                    'title':result.get('title'), 
+                    'description': result.get('description'),
+                    'downloads': downloads
+                }
+            )
+
+
+        return videos
     
     @classmethod
     def get_download(cls, entry, quality = None, download_name = None, confirm = False, download_all = False, ext = 'mp4', show_description = True):
