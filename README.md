@@ -1,17 +1,14 @@
-ydl
-========
+# ydl
 
     Download Video and all of video on playlist from Youtube URL
 
-requirements
-================
+## requirements
 
 Python > 3.0
 Internet Connection
 
 
-install
-===========
+## install
 
 extract file ydl*-*.zip or ydl*-*.tgz
 
@@ -41,8 +38,10 @@ all command help can access by:
     yld --help
 ```
 
-authors
-===========
-L1cf4ce <licface@yahoo.com>
+## How To Use? :
+Watch This Tutorial : [Click Here](https://www.youtube.com/watch?v=c__fxPkCSns)
+
+## authors
+[L1cf4ce](licface@yahoo.com)
 
 
