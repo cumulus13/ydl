@@ -415,7 +415,6 @@ class ydl(object):
         
         if download_all:
             if not start:
-          if
                 start = 1
             ns = 1
             for i in result.get('entries')[int(start - 1):]:
