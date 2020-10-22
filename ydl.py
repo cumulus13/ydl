@@ -414,12 +414,16 @@ class ydl(object):
                 return False
         
         if download_all:
+            if not start:
+          if
+                start = 1
+            ns = 1
             for i in result.get('entries')[int(start - 1):]:
-                if len(str(start)) == 1:
-                    ns = "0" + str(start)
+                if len(str(ns)) == 1:
+                    ns = "0" + str(ns)
                 else:
 
-                    ns = str(start)
+                    ns = str(ns)
                 link, quality_str, ext = self.get_download(i, quality, confirm = confirm, download_all = True, show_description = show)
                 if not link:
                     return False
