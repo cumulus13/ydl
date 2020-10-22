@@ -323,7 +323,7 @@ class ydl(object):
     @click.option('-p', '--path', help = 'Download Path', default = os.getcwd(), metavar='DOWNLOAD_PATH')
     @click.option('-o', '--output', help = 'Save as download file', metavar="NAME")
     @click.option('-q', '--quality', help = 'Quality: 240p|360p|480p|720p|1080p', metavar='QUALITY')
-    @click.option('-s', '--start', help = 'Start download from number to (Only for download playlist)', metavar='START_NUMBER', default = 0)
+    @click.option('-s', '--start', help = 'Start download from number to (Only for download playlist)', metavar='START_NUMBER', default = 1)
     @click.option('-s', '--show', help = 'Show Description for one download and false for download all', is_flag = True)
     @click.option('-c', '--confirm', help = 'Confirmation before download', is_flag = True)
     @click.option('-x', '--proxies', help = "IP_ADDRESS:PORT or use can use 'auto'", nargs = 1, metavar="PROXIES")
