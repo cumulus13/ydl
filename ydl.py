@@ -23,14 +23,18 @@ from configset import configset
 import click
 import string
 import subprocess
-from proxy_tester import auto
+#from proxy_tester import auto
 from unidecode import unidecode
-from jsoncolor import jprint
+try:
+    from jsoncolor import jprint
+except:
+    def jprint(*args, **kwargs):
+        return None
 
 try:
-    from . import downloader
+    from . import ydl_downloader as downloader
 except:
-    import downloader
+    import ydl_downloader as downloader
 
 class ydl(object):
 
@@ -331,7 +335,7 @@ class ydl(object):
     @click.argument('url')
     @click.option('-p', '--path', help = 'Download Path', default = os.getcwd(), metavar='DOWNLOAD_PATH')
     @click.option('-o', '--output', help = 'Save as download file', metavar="NAME")
-    @click.option('-q', '--quality', help = 'Quality: 240p|360p|480p|720p|1080p', metavar='QUALITY')
+    @click.option('-q', '--quality', help = 'Quality: 240p|360p|480p|720p|1080p or "quick" without input to quick download mode and all of this arguments is ignored/passed with new argument, just use "-h|--help" follow with "-q|--quick"', metavar='QUALITY')
     @click.option('-s', '--start', help = 'Start download from number to (Only for download playlist)', metavar='START_NUMBER', default = 1)
     @click.option('-s', '--show', help = 'Show Description for one download and false for download all', is_flag = True)
     @click.option('-c', '--confirm', help = 'Confirmation before download', is_flag = True)

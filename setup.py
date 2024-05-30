@@ -11,7 +11,7 @@ setup(
     keywords = "youtube downloader download channel",
     url = 'https://github.com/cumulus13/ydl',
     scripts = [],
-    py_modules = ['ydl'],
+    py_modules = ['ydl', 'ydl_downloader'],
     packages = find_packages(),
     download_url = 'https://github.com/cumulus13/ydl/tarball/master',
     install_requires=[
@@ -24,8 +24,10 @@ setup(
         'click',
         'clipboard',
         'bitmath',
-        'pushbullet.py',
-        'playsound'
+        'unidecode',
+        'parserheader',
+        'requests',
+        'bitmath'
     ],
     # TODO
     #entry_points={
