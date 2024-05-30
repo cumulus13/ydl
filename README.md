@@ -35,7 +35,7 @@ all command help can access by:
 
 ```bash:
 
-    yld --help
+    ydl --help
 ```
 
 ## as module
