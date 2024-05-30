@@ -554,13 +554,31 @@ class ydl(object):
 
 
 def usage():
-    debug(check1 = sys.argv[1][:6])
-    if len(sys.argv) > 1 and sys.argv[1][:6] == 'https:':
+    if len(sys.argv) > 2:
+        if (sys.argv[1][:6] == 'https:' and sys.argv[2] == '-q') or \
+           (sys.argv[2][:6] == 'https:' and sys.argv[1] == '-q') or \
+           (sys.argv[1][:6] == 'https:' and sys.argv[2] == '--quick') or \
+           (sys.argv[2][:6] == 'https:' and sys.argv[1] == '--quick') or \
+           (sys.argv[1][:6] == 'https:' and sys.argv[2] == 'quick') or \
+           (sys.argv[2][:6] == 'https:' and sys.argv[1] == 'quick') or \
+           (sys.argv[1][:6] == 'https:' and sys.argv[2] == 'q') or \
+           (sys.argv[2][:6] == 'https:' and sys.argv[1] == 'q'):
+            try:
+                sys.argv.remove('quick')
+            except:
+                pass
+            
+            try:
+                sys.argv.remove('q')
+            except:
+                pass            
+            
         #print("RUN [1]")
         parser = argparse.ArgumentParser()
         parser.add_argument('URL', action = 'store', type = str, help = "Youtube URL")
         parser.add_argument('-p', '--save-to', action = 'store', help = f'Download to directory, default: {os.getcwd()}', default = os.getcwd())
-        parser.add_argument('-q', '--quality', action = 'store', help = f'Quality file: 480p|720p|1080p, default: 720p [still development :)]', default = '720p')
+        parser.add_argument('-l', '--quality', action = 'store', help = f'Quality file: 480p|720p|1080p, default: 720p [still development :)]', default = '720p')
+        parser.add_argument('-q', '--quick', action = 'store_true', help = f'Quick download as this current action, not used !')
         
         if len(sys.argv) == 1:
             parser.print_help()
@@ -568,6 +586,7 @@ def usage():
             args = parser.parse_args()
             ydl.quick_download(args.URL, None, args.save_to)
     else:
+        
         #print("RUN [2]")
         ydl.navigate()
 
