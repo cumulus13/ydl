@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 #encoding:utf-8
 from __future__ import print_function
+
+import argparse
 import os, sys
 from youtube_dl import YoutubeDL
 from make_colors import make_colors
@@ -22,6 +24,13 @@ import click
 import string
 import subprocess
 from proxy_tester import auto
+from unidecode import unidecode
+from jsoncolor import jprint
+
+try:
+    from . import downloader
+except:
+    import downloader
 
 class ydl(object):
 
@@ -179,9 +188,9 @@ class ydl(object):
                 result = cls.get_info(url)
             else:
                 break
-            
+
         videos = []
-        
+
         if cls.is_playlist:
             for i in result.get('entries'):
                 all_formatting = ['144', '240', '360', '480', '720', '1080', 'size']
@@ -198,7 +207,7 @@ class ydl(object):
                                 downloads.get(t).get('webm').append(v.get('url'))
                         downloads.update(
                             {'title': v.get('title'),
-                            'description': v.get('description')}
+                             'description': v.get('description')}
                         )
                 videos.append(
                     {
@@ -213,7 +222,7 @@ class ydl(object):
             for i in all_formatting:
                 downloads.update({i:{'mp4':[], 'webm':[]}})
             all_videos = result.get('formats')
-            
+
             for t in all_formatting:
                 for v in all_videos:
                     if t in v.get('format'):
@@ -223,7 +232,7 @@ class ydl(object):
                             downloads.get(t).get('webm').append(v.get('url'))
                     downloads.update(
                         {'title': v.get('title'),
-                        'description': v.get('description')}
+                         'description': v.get('description')}
                     )
             videos.append(
                 {
@@ -235,7 +244,7 @@ class ydl(object):
 
 
         return videos
-    
+
     @classmethod
     def get_download(cls, entry, quality = None, download_name = None, confirm = False, download_all = False, ext = 'mp4', show_description = True):
         qp = None
@@ -296,7 +305,7 @@ class ydl(object):
                     return link, quality_str, ext
             else:
                 return False
-            
+
         else:            
             for i in all_formats:
                 if not download_name:
@@ -317,7 +326,7 @@ class ydl(object):
             return link, quality_str, ext
         return False
 
-    
+
     @click.command()
     @click.argument('url')
     @click.option('-p', '--path', help = 'Download Path', default = os.getcwd(), metavar='DOWNLOAD_PATH')
@@ -329,7 +338,7 @@ class ydl(object):
     @click.option('-x', '--proxies', help = "IP_ADDRESS:PORT or use can use 'auto'", nargs = 1, metavar="PROXIES")
     def navigate(url, path, output = None, quality = None, confirm = None, show = None, start= None, proxies=None):
         return ydl.nav(url, path, output, quality, confirm, show, start, proxies)
-    
+
     @classmethod
     def nav(cls, url, path, output = None, quality = None, confirm = None, show = None, start = None, proxies = None):
         # debug(url = url)
@@ -372,10 +381,10 @@ class ydl(object):
                 )
                 n += 1
             q = raw_input(make_colors("select number [a|all = download all]: ", 'lw','lr'))    
-        
+
         link = None
         download_all = False
-        
+
         if self.is_playlist and q:
             if q and str(q).strip().isdigit():
                 q = str(q).strip()
@@ -412,7 +421,7 @@ class ydl(object):
                     return False
             except:
                 return False
-        
+
         if download_all:
             if not start:
                 start = 1
@@ -455,8 +464,112 @@ class ydl(object):
                 self.downloader(link, path, download_name, confirm)        
         return True
 
+    @classmethod
+    def normalization_name(self, name):
+        name0 = name
+        name = name.strip()
+        name = re.sub("\: ", " - ", name)
+        name = re.sub("\?|\*", "", name)
+        name = re.sub("\:", "-", name)
+        name = re.sub("\.\.\.", "", name)
+        name = re.sub("\.\.\.", "", name)
+        name = re.sub(" / ", " - ", name)
+        name = re.sub("/", "-", name)
+        name = re.sub(" ", ".", name)
+        name = name.encode('utf-8', errors = 'ignore').strip()
+        name = unidecode(name.decode('utf-8', errors = 'ignore')).strip()
+        name = re.sub("\^", "", name)
+        name = re.sub("\[|\]|\?", "", name)
+        name = re.sub("  ", " ", name)
+        name = re.sub("   ", " ", name)
+        name = re.sub("    ", " ", name)
+        name = re.sub("\(TV\)", "", name)
+        name = re.sub("\(tv\)", "", name)
+        name = re.sub("\(TV\)", "", name)
+        name = name.strip()
+        while 1:
+            if name.strip()[-1] == ".":
+                name = name.strip()[:-1]
+            else:
+                break
+        debug(name = name)
+
+        return name
+
+    @classmethod
+    def quick_download(self, url, quality = None, download_path = None):
+        download_path = download_path or os.getcwd()
+        ydl_opts = {
+            'quiet': True,
+            'noplaylist': True,
+            'skip_download': True
+        }
+
+        with YoutubeDL(ydl_opts) as ydl:
+            info_dict = ydl.extract_info(url, download=False)
+            debug(info_dict = info_dict)
+            if os.getenv('DEBUG_SERVER') == "1":
+                try:
+                    jprint(info_dict)
+                except:
+                    pass
+            formats = info_dict.get('formats', [])
+
+            download_info = []
+            n = 1
+            for f in formats:
+                if f.get('ext') == 'mp4':
+                    format_info = {
+                        'title': info_dict.get('title'),
+                        'thumb': info_dict.get('thumbnail'),
+                        'description': info_dict.get('description'),
+                        'quality': f.get('format_note', 'Unknown'),
+                        'has_audio': f.get('acodec') != 'none',
+                        'link': f['url']
+                    }
+                    download_info.append(format_info)
+                    print(
+                        make_colors(str(n).zfill(2) + ".", 'lc') + " " + \
+                        make_colors(info_dict.get('title'), 'ly') + " [" + \
+                        make_colors(f.get('format_note', 'Unknown'), 'lw', 'r') + "] (" + \
+                        make_colors(f.get('acodec') or '', 'lw', 'm') + ")"
+                    )
+                    n += 1
+
+            #return download_info
+        q = input(make_colors("select number to download", 'b', 'y') + ": ")
+        if q and q.isdigit() and int(q) <= len(download_info):
+            link = download_info[int(q) - 1].get('link')
+            debug(link = link)
+            saveas = self.normalization_name(download_info[int(q) - 1].get('title')) + ".mp4"
+            debug(saveas = saveas)
+            downloader.downloader(link, download_path, saveas, thumb=download_info[int(q) - 1].get('thumb'))
+
+    # Example usage
+    #video_url = 'https://www.youtube.com/watch?v=tknQRl9l5oI'
+    #info = get_download_info(video_url)
+
+    #for item in info:
+        #print(item)
+
+
 def usage():
-    ydl.navigate()
+    debug(check1 = sys.argv[1][:6])
+    if len(sys.argv) > 1 and sys.argv[1][:6] == 'https:':
+        #print("RUN [1]")
+        parser = argparse.ArgumentParser()
+        parser.add_argument('URL', action = 'store', type = str, help = "Youtube URL")
+        parser.add_argument('-p', '--save-to', action = 'store', help = f'Download to directory, default: {os.getcwd()}', default = os.getcwd())
+        parser.add_argument('-q', '--quality', action = 'store', help = f'Quality file: 480p|720p|1080p, default: 720p [still development :)]', default = '720p')
+        
+        if len(sys.argv) == 1:
+            parser.print_help()
+        else:
+            args = parser.parse_args()
+            ydl.quick_download(args.URL, None, args.save_to)
+    else:
+        #print("RUN [2]")
+        ydl.navigate()
 
 if __name__ == '__main__':
     usage()

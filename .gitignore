@@ -1,4 +1,6 @@
 *.pyc
+*.log
+*.mp4
 *.bak
 *.zip
 *.rar
