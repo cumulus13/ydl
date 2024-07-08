@@ -39,7 +39,7 @@ except:
 class ydl(object):
 
     youtube = YoutubeDL()
-    notify = notif()
+    notify = notif('ydl', ["FINISH"])
     configfile = os.path.join(os.path.dirname(__file__), 'ydl.ini')
     config = configset(configfile)
     is_playlist = False
@@ -100,7 +100,7 @@ class ydl(object):
         if os.path.isfile(os.path.join(os.path.dirname(__file__), 'logo.png')):
             icon = os.path.join(os.path.dirname(__file__), 'logo.png')
 
-        cls.notify.notify("Download finish: ", saveas, "Neonime", "FINISH", iconpath = icon)
+        cls.notify.send(message = f"Download finish: {saveas}", name = "FINISH", iconpath = icon)
 
         return url
 
